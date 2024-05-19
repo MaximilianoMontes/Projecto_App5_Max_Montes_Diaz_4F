@@ -1,0 +1,74 @@
+﻿@page "/personas"
+@rendermode InteractiveServer
+@inject NavigationManager _navigator;
+@inject IRepositorioUsuarios _repositorio
+
+<h2>RentAcar Usuarios</h2>
+
+<button type="button" class="btn btn-primary" @onclick="Agregar" @onclick:preventDefault>Agregar</button>
+
+@if (Usuario == null)
+{
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+}
+else if (Usuario.Count == 0)
+{
+    <h3>No hay Usuarios</h3>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Numero de telefono</th>
+                <th>Direccion</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Usuarios usuarios in Usuario)
+            {
+                <tr>
+                    <td>@usuarios.Nombre</td>
+                    <td>@usuarios.NumeroTelefono</td>
+                    <td>@usuarios.Direccion</td>
+
+
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => Eliminar(usuarios)">Eliminar</button>
+                        <button class="btn btn-secondary" @onclick="() => Modificar(usuarios.Id)">Modificar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private List<Usuarios>? Usuario;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Usuario = await _repositorio.GetAll();
+    }
+
+    private async void Eliminar(Usuario usuarios)
+    {
+        await _repositorio.Delete(usuarios.Id);
+        usuarios!.Remove(usuarios);
+        StateHasChanged();
+    }
+
+    private void Modificar(int id)
+    {
+        _navigator.NavigateTo($"/usuarios/editar/{id}");
+    }
+
+    private void Agregar()
+    {
+        _navigator.NavigateTo("/usuarios/nuevo");
+    }
+}

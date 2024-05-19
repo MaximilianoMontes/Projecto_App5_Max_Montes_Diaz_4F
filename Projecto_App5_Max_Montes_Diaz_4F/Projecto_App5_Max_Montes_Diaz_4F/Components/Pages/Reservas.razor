@@ -1,0 +1,78 @@
+﻿@page "/reservas"
+@rendermode InteractiveServer
+@inject NavigationManager _navigator;
+@inject IRepositorioReservas _repositorio
+
+<h2>RentAcar Reservas</h2>
+
+<button type="button" class="btn btn-primary" @onclick="Agregar" @onclick:preventDefault>Agregar</button>
+
+@if (Reserva == null)
+{
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+}
+else if (Reserva.Count == 0)
+{
+    <h3>No hay Reservas</h3>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Vehiculo</th>
+                <th>FechaPrestamo</th>
+                <th>FechaFin</th>
+                <th>Monto</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Reservas reservas in Reserva)
+            {
+                <tr>
+                    <td>@reservas.Usuario</td>
+                    <td>@reservas.Vehiculo</td>
+                    <td>@reservas.FechaPrestamo</td>
+                    <td>@reservas.FechaFin</td>
+                    <td>@reservas.Monto</td>
+
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => Eliminar(reservas)">Eliminar</button>
+                        <button class="btn btn-secondary" @onclick="() => Modificar(reservas.Id)">Modificar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private List<Reservas>? Reserva;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Reserva = await _repositorio.GetAll();
+    }
+
+    private async void Eliminar(Reservas reservas)
+    {
+        await _repositorio.Delete(reservas.Id);
+        reservas!.Remove(reservas);
+        StateHasChanged();
+    }
+
+    private void Modificar(int id)
+    {
+        _navigator.NavigateTo($"/reservas/editar/{id}");
+    }
+
+    private void Agregar()
+    {
+        _navigator.NavigateTo("/reservas/nuevo");
+    }
+}
